@@ -2,7 +2,6 @@
 
 import sys
 import os
-import time
 import datetime
 import logging
 import traceback
@@ -77,7 +76,7 @@ def main():
         logging.error('missing aws configuration')
         sys.exit(1)
 
-    end = int(time.time())
+    end = int(datetime.datetime.utcnow().strftime('%s'))
     start = end - 600
 
     for metric_name in config['metrics'].keys():
@@ -96,7 +95,7 @@ def main():
                 int(ddresult['series'][0]['pointlist'][-1][0]) / 1000)
             value = ddresult['series'][0]['pointlist'][-1][1]
         except:
-            logging.error('failed getting %s from datadog' % metric_name)
+            logging.error('failed getting value from datadog')
             traceback.print_exc(file=sys.stderr)
 
         # if datadog failed, get last value from cloudwatch for repeat
@@ -104,18 +103,18 @@ def main():
             logging.warn('getting last value from cloudwatch')
             try:
                 cwresult = cw.get_metric_statistics(60,
-                    datetime.datetime.now() - datetime.timedelta(hours=1),
-                    datetime.datetime.now(),
+                    datetime.datetime.utcnow() - datetime.timedelta(hours=1),
+                    datetime.datetime.utcnow(),
                     metric_def['cloudwatch']['name'],
                     metric_def['cloudwatch']['namespace'],
-                    ['Sum'],
+                    ['Average'],
                     dimensions=metric_def['cloudwatch']['dimensions'],
                     unit=metric_def['cloudwatch']['unit'])
-                timestamp = cwresult[0]['Timestamp']
-                value = cwresult[0]['Sum']
+                cwresult.sort(key=lambda x: x['Timestamp'])
+                timestamp = datetime.datetime.utcnow()
+                value = cwresult[-1]['Average']
             except:
-                logging.error('failed getting last %s from cloudwatch' % \
-                    metric_name)
+                logging.error('failed getting last value from cloudwatch')
                 traceback.print_exc(file=sys.stderr)
                 continue
 
@@ -133,7 +132,7 @@ def main():
                 dimensions=metric_def['cloudwatch']['dimensions'],
                 statistics=None)
         except:
-            logging.error('failed sending %s to cloudwatch' % metric_name)
+            logging.error('failed sending value to cloudwatch')
             traceback.print_exc(file=sys.stderr)
             continue
 
