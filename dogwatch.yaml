@@ -1,0 +1,20 @@
+---
+aws:
+    access_key_id: XXXXXXXXXXXXXXXX
+    secret_access_key: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+    region: us-east-1
+datadog:
+    api_key: ddddddddddddddddddddddd
+    application_key: ddddddddddddddddddddddddddd
+metrics:
+    nginx_request_per_s:
+        datadog:
+            query: avg:nginx.net.request_per_s {stackname:cf_stack_web}
+        cloudwatch:
+            namespace: nginx/net
+            name: RequestsPerSecond
+            unit: Count/Second
+            dimensions:
+                StackName: cf_stack_web
+                AppName: webapp
+
