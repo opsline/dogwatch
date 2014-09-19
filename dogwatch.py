@@ -63,10 +63,10 @@ def main():
         iam_cred = None
     if iam_cred is not None:
         cw = cloudwatch.connect_to_region(
-             options.config['aws']['region'],
-             aws_access_key_id=cred['AccessKeyId'],
-             aws_secret_access_key=cred['SecretAccessKey'],
-             security_token=cred['Token'])
+             config['aws']['region'],
+             aws_access_key_id=iam_cred['AccessKeyId'],
+             aws_secret_access_key=iam_cred['SecretAccessKey'],
+             security_token=iam_cred['Token'])
     elif config.has_key('aws'):
         cw = cloudwatch.connect_to_region(
              config['aws']['region'],
